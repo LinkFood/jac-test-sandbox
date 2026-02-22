@@ -3,7 +3,6 @@ import type { Task } from '../types';
 interface TaskCardProps {
   task: Task;
   onToggle: (id: string) => void;
-  // BUG: onDelete prop exists but is never passed from parent
   onDelete?: (id: string) => void;
 }
 
@@ -14,7 +13,7 @@ export function TaskCard({ task, onToggle, onDelete }: TaskCardProps) {
         className={`checkbox ${task.completed ? 'checked' : ''}`}
         onClick={() => onToggle(task.id)}
       >
-        {task.completed && '✓'}
+        {task.completed && 'â'}
       </div>
       <div className="task-content">
         <div className="task-title">{task.title}</div>
@@ -23,10 +22,20 @@ export function TaskCard({ task, onToggle, onDelete }: TaskCardProps) {
       <span className={`task-priority priority-${task.priority}`}>
         {task.priority}
       </span>
-      {/* BUG: Delete button rendered but onDelete is never passed */}
       {onDelete && (
-        <button onClick={() => onDelete(task.id)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>
-          ✕
+        <button 
+          onClick={() => onDelete(task.id)} 
+          style={{ 
+            background: 'none', 
+            border: 'none', 
+            color: '#666', 
+            cursor: 'pointer',
+            fontSize: '16px',
+            padding: '4px 8px'
+          }}
+          title="Delete task"
+        >
+          â
         </button>
       )}
     </div>

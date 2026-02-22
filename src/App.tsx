@@ -4,7 +4,7 @@ import { TaskCard } from './components/TaskCard';
 import { TaskStats } from './components/TaskStats';
 
 function App() {
-  const { tasks, addTask, toggleTask, stats } = useTasks();
+  const { tasks, addTask, toggleTask, deleteTask, stats } = useTasks();
   const [newTaskTitle, setNewTaskTitle] = useState('');
 
   const handleAddTask = (e: React.FormEvent) => {
@@ -18,7 +18,7 @@ function App() {
     <div className="app">
       <header className="header">
         <h1>Task Manager</h1>
-        <p>A simple task tracker — JAC test sandbox</p>
+        <p>A simple task tracker â JAC test sandbox</p>
       </header>
 
       <form className="add-task" onSubmit={handleAddTask}>
@@ -36,7 +36,7 @@ function App() {
             key={task.id}
             task={task}
             onToggle={toggleTask}
-            // BUG: deleteTask exists in hook but is never passed here
+            onDelete={deleteTask}
           />
         ))}
       </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTasks } from './hooks/useTasks';
 import { TaskCard } from './components/TaskCard';
 import { TaskStats } from './components/TaskStats';
+import { BouncingBall } from './components/BouncingBall';
 
 function App() {
   const { tasks, addTask, toggleTask, stats } = useTasks();
@@ -18,7 +19,8 @@ function App() {
     <div className="app">
       <header className="header">
         <h1>Task Manager</h1>
-        <p>A simple task tracker — JAC test sandbox</p>
+        <p>A simple task tracker â JAC test sandbox</p>
+        <BouncingBall className="header-ball" />
       </header>
 
       <form className="add-task" onSubmit={handleAddTask}>

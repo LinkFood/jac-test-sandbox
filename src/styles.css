@@ -20,6 +20,7 @@ body {
 .header {
   text-align: center;
   margin-bottom: 2rem;
+  position: relative;
 }
 
 .header h1 {
@@ -29,6 +30,40 @@ body {
 
 .header p {
   color: #888;
+}
+
+/* Bouncing Ball Styles */
+.bouncing-ball {
+  position: absolute;
+  top: 0;
+  right: 2rem;
+  width: 40px;
+  height: 100px;
+  pointer-events: none;
+}
+
+.header-ball {
+  right: 0;
+}
+
+.ball {
+  width: 40px;
+  height: 40px;
+  background: #22c55e;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
+  animation: bounce 2s infinite ease-in-out;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(-60px);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
 }
 
 .task-list {

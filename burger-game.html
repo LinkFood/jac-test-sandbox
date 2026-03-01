@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burger Flipping Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #2a2a2a;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect x="8" y="0" width="16" height="20" fill="%23888" rx="2"/><rect x="14" y="20" width="4" height="12" fill="%23654321"/><rect x="10" y="2" width="12" height="16" fill="%23aaa" rx="1"/></svg>') 16 16, auto;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        .game-container {
+            text-align: center;
+            padding: 20px;
+            background-color: #1a1a1a;
+            border: 4px solid #444;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding: 0 20px;
+        }
+        
+        .timer, .score {
+            font-size: 18px;
+            color: #ffcc00;
+        }
+        
+        .timer.warning {
+            color: #ff6666;
+            animation: blink 0.5s infinite;
+        }
+        
+        @keyframes blink {
+            50% { opacity: 0.5; }
+        }
+        
+        .grill {
+            width: 400px;
+            height: 300px;
+            background: linear-gradient(180deg, #333 0%, #222 50%, #111 100%);
+            border: 8px solid #444;
+            border-radius: 4px;
+            position: relative;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        
+        .grill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 20px, #444 20px, #444 22px),
+                repeating-linear-gradient(90deg, transparent, transparent 20px, #444 20px, #444 22px);
+            opacity: 0.3;
+        }
+        
+        .burger {
+            width: 120px;
+            height: 40px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 60px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+        
+        .burger:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+        
+        .burger.raw {
+            background: linear-gradient(180deg, #ff9999 0%, #ff6666 100%);
+        }
+        
+        .burger.cooking {
+            background: linear-gradient(180deg, #cc9966 0%, #996633 100%);
+        }
+        
+        .burger.perfect {
+            background: linear-gradient(180deg, #ffcc66 0%, #cc9933 100%);
+            box-shadow: 0 4px 12px rgba(255, 204, 0, 0.4);
+        }
+        
+        .burger.burnt {
+            background: linear-gradient(180deg, #664422 0%, #332211 100%);
+        }
+        
+        .burger.flipping {
+            animation: flip 0.5s ease;
+        }
+        
+        @keyframes flip {
+            50% {
+                transform: translate(-50%, -50%) rotateY(180deg) scale(1.2);
+            }
+        }
+        
+        .feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: fadeUp 1s ease forwards;
+        }
+        
+        .feedback.perfect {
+            color: #00ff00;
+        }
+        
+        .feedback.bad {
+            color: #ff0000;
+        }
+        
+        @keyframes fadeUp {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -150%);
+            }
+        }
+        
+        .game-over, .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal {
+            background-color: #1a1a1a;
+            border: 4px solid #444;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+        }
+        
+        .modal h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #ffcc00;
+        }
+        
+        .modal p {
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        
+        .leaderboard {
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .leaderboard h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #ffcc00;
+        }
+        
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 12px;
+            padding: 5px;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .leaderboard-entry.highlight {
+            background-color: rgba(255, 204, 0, 0.2);
+            color: #ffcc00;
+        }
+        
+        input[type="text"] {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #333;
+            border: 2px solid #666;
+            color: #fff;
+            border-radius: 4px;
+            width: 200px;
+        }
+        
+        button {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px;
+            padding: 15px 30px;
+            margin: 10px;
+            background-color: #ffcc00;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: #ffdd33;
+            transform: scale(1.05);
+        }
+        
+        .instructions {
+            font-size: 10px;
+            line-height: 1.8;
+            margin: 20px 0;
+            color: #ccc;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <div class="timer">Time: <span id="timer">60</span></div>
+            <div class="score">Score: <span id="score">0</span></div>
+        </div>
+        <div class="grill" id="grill">
+            <!-- Burgers will be dynamically added here -->
+        </div>
+    </div>
+    
+    <div class="start-screen" id="startScreen">
+        <div class="modal">
+            <h2>Burger Flipping Game</h2>
+            <div class="instructions">
+                <p>🍔 Flip burgers at the perfect time!</p>
+                <p>⏱️ You have 60 seconds</p>
+                <p>🎯 Scoring:</p>
+                <p>Perfect (3-5 sec): +10 points</p>
+                <p>Too Early (< 3 sec): -5 points</p>
+                <p>Too Late (> 5 sec): -5 points</p>
+            </div>
+            <button onclick="startGame()">Start Game</button>
+        </div>
+    </div>
+    
+    <div class="game-over hidden" id="gameOver">
+        <div class="modal">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <input type="text" id="playerName" placeholder="Enter your name" maxlength="10">
+            <button onclick="saveScore()">Save Score</button>
+            <div class="leaderboard">
+                <h3>Leaderboard</h3>
+                <div id="leaderboardList"></div>
+            </div>
+            <button onclick="restartGame()">Play Again</button>
+        </div>
+    </div>
+    
+    <script>
+        let gameState = {
+            score: 0,
+            timeLeft: 60,
+            isPlaying: false,
+            burgers: [],
+            gameInterval: null,
+            burgerInterval: null
+        };
+        
+        const BURGER_STATES = {
+            RAW: 'raw',
+            COOKING: 'cooking',
+            PERFECT: 'perfect',
+            BURNT: 'burnt'
+        };
+        
+        const COOKING_TIMES = {
+            RAW_TIME: 3000,
+            PERFECT_START: 3000,
+            PERFECT_END: 5000,
+            BURNT_TIME: 5000
+        };
+        
+        class Burger {
+            constructor(id) {
+                this.id = id;
+                this.state = BURGER_STATES.RAW;
+                this.startTime = Date.now();
+                this.element = this.createElement();
+                this.updateInterval = setInterval(() => this.updateState(), 100);
+            }
+            
+            createElement() {
+                const burger = document.createElement('div');
+                burger.className = 'burger raw';
+                burger.id = `burger-${this.id}`;
+                burger.style.left = `${Math.random() * 60 + 20}%`;
+                burger.style.top = `${Math.random() * 60 + 20}%`;
+                burger.onclick = () => this.flip();
+                return burger;
+            }
+            
+            updateState() {
+                const elapsed = Date.now() - this.startTime;
+                
+                if (elapsed < COOKING_TIMES.RAW_TIME) {
+                    this.state = BURGER_STATES.RAW;
+                    this.element.className = 'burger raw';
+                } else if (elapsed < COOKING_TIMES.PERFECT_START) {
+                    this.state = BURGER_STATES.COOKING;
+                    this.element.className = 'burger cooking';
+                } else if (elapsed <= COOKING_TIMES.PERFECT_END) {
+                    this.state = BURGER_STATES.PERFECT;
+                    this.element.className = 'burger perfect';
+                } else {
+                    this.state = BURGER_STATES.BURNT;
+                    this.element.className = 'burger burnt';
+                }
+            }
+            
+            flip() {
+                if (!gameState.isPlaying) return;
+                
+                this.element.classList.add('flipping');
+                
+                let points = 0;
+                let feedback = '';
+                
+                switch (this.state) {
+                    case BURGER_STATES.RAW:
+                        points = -5;
+                        feedback = 'Too Early!';
+                        break;
+                    case BURGER_STATES.PERFECT:
+                        points = 10;
+                        feedback = 'Perfect!';
+                        break;
+                    case BURGER_STATES.BURNT:
+                        points = -5;
+                        feedback = 'Burnt!';
+                        break;
+                    default:
+                        points = 0;
+                        feedback = 'Good!';
+                }
+                
+                updateScore(points);
+                showFeedback(feedback, points > 0);
+                
+                setTimeout(() => {
+                    this.destroy();
+                }, 500);
+            }
+            
+            destroy() {
+                clearInterval(this.updateInterval);
+                this.element.remove();
+                gameState.burgers = gameState.burgers.filter(b => b.id !== this.id);
+            }
+        }
+        
+        function startGame() {
+            document.getElementById('startScreen').classList.add('hidden');
+            gameState.score = 0;
+            gameState.timeLeft = 60;
+            gameState.isPlaying = true;
+            gameState.burgers = [];
+            
+            updateScore(0);
+            updateTimer();
+            
+            // Start game timer
+            gameState.gameInterval = setInterval(() => {
+                gameState.timeLeft--;
+                updateTimer();
+                
+                if (gameState.timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+            
+            // Start spawning burgers
+            spawnBurger();
+            gameState.burgerInterval = setInterval(spawnBurger, 2000);
+        }
+        
+        function spawnBurger() {
+            if (!gameState.isPlaying || gameState.burgers.length >= 5) return;
+            
+            const burger = new Burger(Date.now());
+            gameState.burgers.push(burger);
+            document.getElementById('grill').appendChild(burger.element);
+        }
+        
+        function updateScore(points) {
+            if (points !== 0) {
+                gameState.score += points;
+            }
+            document.getElementById('score').textContent = gameState.score;
+        }
+        
+        function updateTimer() {
+            const timerElement = document.getElementById('timer');
+            timerElement.textContent = gameState.timeLeft;
+            
+            if (gameState.timeLeft <= 10) {
+                timerElement.parentElement.classList.add('warning');
+            } else {
+                timerElement.parentElement.classList.remove('warning');
+            }
+        }
+        
+        function showFeedback(text, isGood) {
+            const feedback = document.createElement('div');
+            feedback.className = `feedback ${isGood ? 'perfect' : 'bad'}`;
+            feedback.textContent = text;
+            document.getElementById('grill').appendChild(feedback);
+            
+            setTimeout(() => feedback.remove(), 1000);
+        }
+        
+        function endGame() {
+            gameState.isPlaying = false;
+            clearInterval(gameState.gameInterval);
+            clearInterval(gameState.burgerInterval);
+            
+            // Clean up remaining burgers
+            gameState.burgers.forEach(burger => burger.destroy());
+            
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('gameOver').classList.remove('hidden');
+            
+            displayLeaderboard();
+        }
+        
+        function saveScore() {
+            const playerName = document.getElementById('playerName').value.trim() || 'Anonymous';
+            const scores = getLeaderboard();
+            
+            scores.push({
+                name: playerName,
+                score: gameState.score,
+                date: new Date().toISOString()
+            });
+            
+            // Sort by score (highest first) and keep top 10
+            scores.sort((a, b) => b.score - a.score);
+            scores.splice(10);
+            
+            localStorage.setItem('burgerGameLeaderboard', JSON.stringify(scores));
+            displayLeaderboard(playerName);
+            
+            document.getElementById('playerName').value = '';
+            document.getElementById('playerName').disabled = true;
+            document.querySelector('button[onclick="saveScore()"]').disabled = true;
+        }
+        
+        function getLeaderboard() {
+            const stored = localStorage.getItem('burgerGameLeaderboard');
+            return stored ? JSON.parse(stored) : [];
+        }
+        
+        function displayLeaderboard(highlightName = null) {
+            const scores = getLeaderboard();
+            const leaderboardList = document.getElementById('leaderboardList');
+            leaderboardList.innerHTML = '';
+            
+            scores.forEach((entry, index) => {
+                const div = document.createElement('div');
+                div.className = 'leaderboard-entry';
+                if (highlightName && entry.name === highlightName && entry.score === gameState.score) {
+                    div.classList.add('highlight');
+                }
+                
+                div.innerHTML = `
+                    <span>${index + 1}. ${entry.name}</span>
+                    <span>${entry.score}</span>
+                `;
+                
+                leaderboardList.appendChild(div);
+            });
+            
+            if (scores.length === 0) {
+                leaderboardList.innerHTML = '<div class="leaderboard-entry">No scores yet!</div>';
+            }
+        }
+        
+        function restartGame() {
+            document.getElementById('gameOver').classList.add('hidden');
+            document.getElementById('playerName').disabled = false;
+            document.querySelector('button[onclick="saveScore()"]').disabled = false;
+            document.getElementById('grill').innerHTML = '';
+            startGame();
+        }
+    </script>
+</body>
+</html>

@@ -32,10 +32,15 @@ export function useTasks() {
     setTasks(prev => prev.filter(t => t.id !== id));
   }, []);
 
+  const completedCount = tasks.filter(t => t.completed).length;
+  const totalCount = tasks.length;
+  const completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
   const stats = {
-    total: tasks.length,
-    completed: tasks.filter(t => t.completed).length,
+    total: totalCount,
+    completed: completedCount,
     pending: tasks.filter(t => !t.completed).length,
+    completionPercentage,
   };
 
   return { tasks, addTask, toggleTask, deleteTask, stats };

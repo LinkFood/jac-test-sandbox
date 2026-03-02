@@ -11,4 +11,5 @@ export interface TaskStats {
   total: number;
   completed: number;
   pending: number;
+  completionPercentage: number;
 }

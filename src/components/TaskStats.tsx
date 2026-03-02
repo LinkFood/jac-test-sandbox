@@ -19,7 +19,16 @@ export function TaskStats({ stats }: TaskStatsProps) {
         <div className="stat-value">{stats.pending}</div>
         <div className="stat-label">Pending</div>
       </div>
-      {/* BUG: No completion percentage shown */}
+      <div className="stat completion-stat">
+        <div className="stat-value">{stats.completionPercentage}%</div>
+        <div className="stat-label">Complete</div>
+        <div className="progress-bar">
+          <div 
+            className="progress-fill" 
+            style={{ width: `${stats.completionPercentage}%` }}
+          ></div>
+        </div>
+      </div>
     </div>
   );
 }
